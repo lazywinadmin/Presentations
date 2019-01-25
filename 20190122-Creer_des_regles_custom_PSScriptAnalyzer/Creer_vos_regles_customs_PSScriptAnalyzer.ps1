@@ -1,9 +1,9 @@
 ﻿<#
     Creer vos regles customs PSSCriptAnalyzer
-    French PowerShell Saturday Paris (15 Sept 2018)
+    French PowerShell Saturday Paris (2019/01/22)
 #>
 
-$DemoPath = "$home\onedrive\scripts\Github\PresentationLazyWinAdmin\201809-French_PowerShell_User_Group\"
+$DemoPath = "c:\demo\"
 
 ################################
 # PSScriptAnalyzer ?
@@ -16,19 +16,19 @@ $DemoPath = "$home\onedrive\scripts\Github\PresentationLazyWinAdmin\201809-Frenc
 #######################
 # Install/Usage
 #######################
-Install-Module -Name PSScriptAnalyzer -Force CurrentUser
+Install-Module -Name PSScriptAnalyzer -Force -Scope currentUser -Verbose
 Import-Module -Name PSScriptAnalyzer -PassThru
 Get-Command -Module PSScriptAnalyzer
 
 
 #Liste des builtin rules
-Get-ScriptAnalyzerRule | select * | Out-GridView 
+Get-ScriptAnalyzerRule | Select-Object -Property * | Out-GridView
 
 
 # Utiliser les regles de bases
 ise $DemoPath\scripts\MyScript2.ps1
 Invoke-ScriptAnalyzer -Path $DemoPath\scripts\MyScript2.ps1
-Invoke-ScriptAnalyzer -Path $DemoPath\scripts\MyScript2.ps1 -Severity Warning
+Invoke-ScriptAnalyzer -Path $DemoPath\scripts\MyScript2.ps1 -Severity Information
 Invoke-ScriptAnalyzer -Path $DemoPath\scripts\MyScript2.ps1 -IncludeRule PSAvoidUsingCmdletAliases
 Invoke-ScriptAnalyzer -Path $DemoPath\scripts\MyScript2.ps1 -IncludeRule PSAvoidUsingPlainTextForPassword
 Invoke-ScriptAnalyzer -Path $DemoPath\scripts\MyScript2.ps1 -IncludeRule PSAvoidUsingPlainTextForPassword,PSAvoidUsingCmdletAliases
@@ -36,12 +36,12 @@ Invoke-ScriptAnalyzer -Path $DemoPath\scripts\MyScript2.ps1 -IncludeRule PSAvoid
 # Utiliser les settings
 #  examples disponible ici:
 # $home\Documents\WindowsPowerShell\Modules\PSScriptAnalyzer\1.17.1\Settings
-gci "C:\Users\fxavi\Documents\WindowsPowerShell\Modules\PSScriptAnalyzer\1.17.1\Settings"
+(gci "$((gmo psscriptanalyzer).ModuleBase)\Settings").fullname
 Invoke-ScriptAnalyzer -Path $DemoPath\scripts\MyScript2.ps1 -Settings CodeFormatting
 
 $settings = @{
     IncludeRules = @(
-        'PSPlaceOpenBrace',
+        'PSPlaceOpenBrace', #https://github.com/PowerShell/PSScriptAnalyzer/blob/development/RuleDocumentation/PlaceOpenBrace.md
         'PSPlaceCloseBrace',
         'PSUseConsistentWhitespace',
         'PSUseConsistentIndentation',
@@ -118,7 +118,6 @@ QuickInventory -Comp (gc $File)
 '@
 
 # Check default formatting
-Invoke-Formatter
 invoke-formatter -ScriptDefinition $code
 
 # Specify our settings
@@ -221,9 +220,6 @@ $ScriptBlock.Ast.FindAll({$args[0] -is [System.Management.Automation.Language.Va
 # Show the different classes
 [System.Management.Automation.Language.
 
-
-
-
 # Using PSParser
 # Retrieve the content of the scripts
 $Code = Get-Content (Resolve-Path $demopath\scripts\MyScript2.ps1)
@@ -255,7 +251,7 @@ Show-Ast $ScriptBlock
 
 # Module ASTHelper (Thomas Rayner)
 Install-Module -name ASTHelper -Scope CurrentUser # From Thomas Rayner
-Import-Module -name ASTHelper
+Import-Module -name ASTHelper -PassThru
 Get-Command -module asthelper
 Get-AstType -ScriptPath $DemoPath\scripts\MyScript2.ps1
 
@@ -271,13 +267,10 @@ Get-AstType -ScriptPath $DemoPath\scripts\MyScript2.ps1
 # SCENARIO:
 #  Identifier une violation
 #  Retourner le probleme a l'ecran
-
-Invoke-ScriptAnalyzer -Path $DemoPath\scripts\MyScript.ps1 -CustomRulePath $DemoPath\customrules\LWACustomRules.psd1
+Invoke-ScriptAnalyzer -Path $DemoPath\scripts\MyScript2.ps1 -CustomRulePath $DemoPath\customrules\LWACustomRules.psd1
 ise $DemoPath\customrules\LWACustomRules.psm1
 ise $DemoPath\customrules\public\test-parametermissing.ps1
 ise $DemoPath\customrules\public\test-functionnondash.ps1
-
-Invoke-ScriptAnalyzer -Path $DemoPath\scripts\MyScript2.ps1 -CustomRulePath $DemoPath\customrules\LWACustomRules.psd1
 
 
 # Properties available
@@ -291,8 +284,7 @@ Invoke-ScriptAnalyzer -Path $DemoPath\scripts\MyScript2.ps1 -CustomRulePath $Dem
 - string scriptPath,
 - string ruleId,
 - System.Collections.Generic.IEnumerable[Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.CorrectionExtent] suggestedCorrections
- 
-#>
+ #>
 
 
 
