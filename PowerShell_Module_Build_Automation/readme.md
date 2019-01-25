@@ -27,24 +27,23 @@ Voir: https://github.com/lazywinadmin/PSModuleSample/
 1. Yaml fait juste rouler des test pester, les publier.
 1. Deplacer logic vers build.ps1
 1. Deployer dans la gallery
-  1. Gestion de secrets
+   1. Gestion de secrets
 1. Probleme avec cette approche
-  1. Gestion de version du module
-  1. Gestion du psm1 file
-  1. Build then test the final product
-  1. Deploy only in some scenario "deploy!"
+   1. Gestion de version du module
+   1. Gestion du psm1 file
+   1. Build then test the final product
+   1. Deploy only in some scenario "deploy!"
 1. Ameliorer cette approche
-  1. PSake
-  1. CI/CD agnostic avec BuildHelper
-  1. Documentation
-  1. Presentation
+   1. PSake
+   1. CI/CD agnostic avec BuildHelper
+   1. Documentation
+   1. Presentation
 
 
 
 
 #########################################
-#########################################
-#########################################
+
 
 
 
