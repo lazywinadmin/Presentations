@@ -1,6 +1,8 @@
 # PowerShell Module Build Automation
 
-Presentation on how you can automate the build of your PowerShell Modules
+Comment automatiser le build de vos modules.
+
+Voir: https://github.com/lazywinadmin/PSModuleSample/
 
 ## Assumptions
 
@@ -40,6 +42,9 @@ Presentation on how you can automate the build of your PowerShell Modules
 
 
 
+#########################################
+#########################################
+#########################################
 
 
 
@@ -60,12 +65,12 @@ Voir presentation de
 
 ## Other topics to cover ?
 
-* template
-* ModuleCommon files
-* IDE settings
-* Best Practices
-* documentation
-* dependences
+* template / plaster
+* ModuleCommon files / Central location
+* IDE settings / conformite
+* Best Practices enforcement
+* documentation management
+* dependences management
 
 # Demos
 ## Scenario A - One psm1 file
