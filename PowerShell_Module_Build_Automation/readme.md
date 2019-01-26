@@ -23,6 +23,7 @@ Voir: https://github.com/lazywinadmin/PSModuleSample/
 
 1. Modules Folder Structures
 1. Build automation c'est quoi ?
+  Github > Build Tool > Actions
 1. Yaml - Show syntax from appveyor / az devops
 1. Yaml fait juste rouler des test pester, les publier.
 1. Deplacer logic vers build.ps1
@@ -38,7 +39,9 @@ Voir: https://github.com/lazywinadmin/PSModuleSample/
    1. CI/CD agnostic avec BuildHelper
    1. Documentation
    1. Presentation
-
+   1. Git ignore
+   1. Vscode settings
+   1. vscode tasks
 
 
 
