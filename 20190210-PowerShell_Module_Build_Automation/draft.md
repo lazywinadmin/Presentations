@@ -22,11 +22,37 @@ Voir: https://github.com/lazywinadmin/PSModuleSample/
 ## Agenda
 
 1. Modules Folder Structures
+   1. Type
+      psm1
+      dot source
+      "compiled"/build
+   1. Voir presentations
+      1. Stijn Callebaut - PowerShell release pipeline https://youtu.be/WJ140S4mCfM?t=126
+      1. Chris Gardner - Building Better Bricks https://youtu.be/-gyvP-h-zXs
 1. Build automation c'est quoi ?
-  Github > Build Tool > Actions
-1. Yaml - Show syntax from appveyor / az devops
-1. Yaml fait juste rouler des test pester, les publier.
+    Repo > Build Tool > Actions
+    Pourquoi utiliser ca ?
+        Quand je suis seul je ne vois pas trop le +
+        Travail a plusieures
+        Tests
+        Deployer souvent, valider que c'est un produit fini et propre
+        Donner de la visibilite
+    Pourquoi mettre ca online ? pas tester localement ?
+        Travail en open source/ a plusieures
+        Badge
+    Build tool a sa propre sequence
+        test
+        build
+        post build
+        deploy 
+        etc
+1. Yaml
+   1. Yaml?
+   1. Show syntax from appveyor / az devops
+   1. Yaml fait juste rouler des test pester, les publier.
+   1. DEMO
 1. Deplacer logic vers build.ps1
+   1. DEMO
 1. Deployer dans la gallery
    1. Gestion de secrets
 1. Probleme avec cette approche
@@ -35,6 +61,7 @@ Voir: https://github.com/lazywinadmin/PSModuleSample/
    1. Build then test the final product
    1. Deploy only in some scenario "deploy!"
 1. Ameliorer cette approche
+   1. Ne plus ameliorer de Yaml (avec AzDevops)
    1. PSake
    1. CI/CD agnostic avec BuildHelper
    1. Documentation
@@ -42,6 +69,10 @@ Voir: https://github.com/lazywinadmin/PSModuleSample/
    1. Git ignore
    1. Vscode settings
    1. vscode tasks
+   1. Session sur Plaster (laurent)
+   1. Session sur AzDevops (Olivier)
+   1. Session sur Github Action (???Olivier ?)
+
 
 
 
@@ -240,9 +271,9 @@ https://www.youtube.com/watch?v=wSFwOib_48g
 https://blog.netnerds.net/2018/12/even-faster-powershell-module-loading/
 https://www.youtube.com/watch?v=Y3aALvpNZrk
 
-documentation
-vscode configuration
-
+What about:
+    documentation
+    vscode configuration
 
 https://www.dell.com/support/article/us/en/04/sln171944/how-to-troubleshoot-slow-performance-issues?lang=en
 

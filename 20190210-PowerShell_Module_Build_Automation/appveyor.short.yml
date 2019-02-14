@@ -1,0 +1,22 @@
+version: 1.0.{build}
+
+only_commits:
+  message: /build/                               # Start a new build if message contains 'build'
+  author: fxcat@lazywinadmin.com                 # Start a new build for commit of user with specific email
+
+environment:
+  my_var1: value1
+  my_secure_var1:
+    secure: FW3tJ3fMncxvs58/ifSP7w==
+
+install:
+  - ps: Import-Module .\tools\HelperModule.psd1
+
+build_script:
+  - ps: . .\build.ps1
+
+before_test:
+  - ps: . .\beforetest.ps1
+
+test_script:
+  - ps: . .\test.ps1
