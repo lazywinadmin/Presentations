@@ -1,3 +1,3 @@
 # Presentations
 
-The repository my presentations content
+Content of my presentations
