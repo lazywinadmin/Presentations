@@ -1,0 +1,5 @@
+{
+    "editor.renderWhitespace": "all",
+    "files.trimTrailingWhitespace": true,
+    "editor.mouseWheelZoom": true
+}
