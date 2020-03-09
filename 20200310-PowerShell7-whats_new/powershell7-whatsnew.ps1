@@ -5,6 +5,9 @@
 - Re-Launch PowerShell sessions
 - VSCode Theme: Light for presentation
 - Use Mouse with cable ?
+- Silent Slack
+- Close Google Hangout/other chats
+- Phone on Silent
 
 #>
 #############################
@@ -25,10 +28,10 @@
 -Watch: frpsug.com/videos
 -Speak: frpsug.com/speak
     or contact:
-        -Laurent (@IronTux)
-        -Olivier (@omiossec_med)
-        -Stephane (@stephanevg)
-        -FX (@lazywinadmin)
+        -Laurent    (@IronTux)
+        -Olivier    (@omiossec_med)
+        -Stephane   (@stephanevg)
+        -FX         (@lazywinadmin)
 #>
 
 
@@ -38,11 +41,9 @@
 #>
 
 <# DEMO CONTEXT
-
 - Ubuntu 18.04
 - PowerShell 7.0.0
 - VSCode + PS Extension 2020.3.0
-
 #>
 
 <# AGENDA
@@ -58,6 +59,9 @@
 
 <# About PowerShell 7
 - First Long Term Servicing (LTS) release
+    Three years of Support and release every other year
+    (Current releases are supported for three months after a subsequent Current or LTS release.)
+
 - PowerShell 7 is based on .NET Core 3.1
 - OS Supported:
   - Windows 8.1, and 10
@@ -69,6 +73,7 @@
   - Ubuntu LTS 16.04+
   - Alpine Linux 3.8+
   - ARM32 and ARM64 flavors of Debian, Ubuntu, and ARM64 Alpine Linux.
+
 - OS unsupported (where PS7 works)
   - Kali Linux
 #>
@@ -181,7 +186,7 @@ Get-Process | ForEach-Object -Parallel {
 
 $threadSafeDictionary.Keys      # ProcessName
 $threadSafeDictionary.Values    # Process object
-$threadSafeDictionary["pwsh"]
+$threadSafeDictionary["pwsh"]   # Specific value
 
 # Set timeout
 1..5 | Foreach-Object -Parallel {Start-Sleep -s 10} -TimeoutSeconds 1
@@ -199,7 +204,7 @@ Get-content ./20200310-PowerShell7-whats_new/stuff.txt |
 
 
 ####################
-# ERRORVIEW and GET-ERROR
+# ERRORVIEW
 ####################
 [System.Management.Automation.ErrorView]::
 $ErrorView # ConciseView is default
@@ -230,9 +235,6 @@ Get-Error
 $Error[0] | Get-Error
 Get-Error -Newest 2
 
-$Error[0].ScriptStackTrace
-
-
 ####################
 <# NULL-COALESCING Operators
 ####################
@@ -246,11 +248,12 @@ $Error[0].ScriptStackTrace
 ######
 # <statementA> ?? <thing to do if statementA is null>
 
-# BEFORE
+## BEFORE
 $x = $null
 if ($null -eq $x) {'x is null'}
 
-# NEW
+## NEW
+
 # example A - $x is null
 $x = $null
 $x ?? 'x is null'   # if $x is null, show 'x is null'. Else show $x value
@@ -263,18 +266,22 @@ $x ?? 2
 $x = 1
 $x ?? 'x is null'
 
-# example D - real example (if posh-git is not present, install it)
+# example D - if posh-git is not present, install it
 (Get-Module -ListAvailable posh-git) ?? (Install-Module posh-git -WhatIf -Force)
+
+# example C - if file 'stuff.txt' exists show content, else get some content and create file
+(Get-Content ./stuff.txt -ea 0|select -f 2) ?? ((iwr 'http://lazywinadmin.com').content > ./stuff.txt)
+
 
 #######
 # ??= #
 #######
-# If left statement is null, assign stuff specified on the right
+# If left statement is null, assign value specified on the right
 
-# BEFORE
+## BEFORE
 if ($null -eq $x) {$x=5}
 
-# NEW in PS 7
+## NEW in PS 7
 $x = $null
 $x ??= 5
 
@@ -283,70 +290,88 @@ $x # $x eq 5
 
 
 
+
+
+####################
 <# PIPELINE CHAIN OPERATORS
+####################
 
-    && (Ampersand)
-    || (Pipe,vertical bar)
+    && (double Ampersand) / ('Et' commercial)
+    || (double Pipe,vertical bar)
 
+    See 'about_pipeline_chain_operators'
 #>
 
-# Get-Help about_pipeline_chain_operators
-# These use $LASTEXITCODE and $? variables to know if pipeline failed
+# Use $LASTEXITCODE and $? variables to know if pipeline failed
 
-# &&
-# <Command 1> && <Command 2 if Command 1 was successful>
-# BEFORE
-Get-Process -id $PID ; if ($?) { Write-Output 'Second command' }
+######
+# && #
+######
+
+# <Command A> && <Command B if Command A was successful>
+
+## BEFORE
+Get-Process -id $PID ; if ($?) { 'Second command' }
+
 # NEW in PS 7
-Get-Process -id $PID && Write-Output 'Second command'
+Get-Process -id $PID && 'Second command'
 
 # Other examples
 install-module adsips -verbose -Force && import-module adsips -verbose
 sudo apt update && sudo apt upgrade
 
-# ||
+
+
+######
+# || #
+######
+
 # <Command 1> && <Command 2 if Command 1 was failed>
-Write-Error 'Bad' || Write-Output 'Second'
+
+## BEFORE
+Get-Process -id abc ; if (-not$?) { Write-Output 'Second command' }
+
+## NEW in PowerShell 7
+Get-Process -id abc || Write-Output 'Second command'
+
+# ErrorActionPreference obviously is taken into account
 $ErrorActionPreference = 'Continue' # Default 'Continue'
 1/0 || "Wow something went wrong"
 
 $ErrorActionPreference = 'Stop' # Default 'Continue'
 1/0 || "Wow something went wrong"
-#
 
 
 
 
-# Ternary Operator
 
-function testdistance {
-    param($start,$end)
+####################
+# TERNARY OPERATORS
+####################
 
-    if(($end - $start) -gt 5){
-        "more than 5"
-    }else{
-        "less than 5"
-    }
+# <evaluation> ? $true : $false
+
+## BEFORE
+$start  = 5
+$end    = 25
+if(($end - $start) -gt 5){
+    "more than 5"
+}else{
+    "less than 5"
 }
-Testdistance -start 5 -end 25
 
-#with ternary
-function testdistance {
-    param($start,$end)
+## NEW in PS7
+$start  = 5
+$end    = 25
 
-        (($end - $start) -gt 5) ? "THe numbers are more than 5" : "less than 5"
-        # <evaluation> ? $true : $false
-    }
-
-Testdistance -start 5 -end 25
-Testdistance -start 5 -end 6
+(($end - $start) -gt 5) ? "More than 5" : "Less than 5"
 
 
-<#
 
-New features
 
-#>
+####################
+# OTHER NEW FEATURES
+####################
 
 # PowerShell Jobs
 ## Foreach-Object parallel can use jobs
