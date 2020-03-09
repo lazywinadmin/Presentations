@@ -87,10 +87,12 @@ Main methods available, see docs for more details
 -Manual     Install from Github Repository (releases)
     https://github.com/PowerShell/PowerShell/releases/tag/v7.0.0
 
--WinOS      Chocolatey, Microsoft Store
+-WinOS      Chocolatey, Microsoft Store, or:
+            'iex "& { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI"'
 -MacOS      'brew cask install powershell'
 -Linux      'sudo apt-get install -y powershell'    (Debian/Ubuntu)
             'sudo yum install -y powershell'        (CentOS/RedHat)
+            'wget https://aka.ms/install-powershell.sh; sudo bash install-powershell.sh; rm install-powershell.sh'
 
 -.Net SDK   'dotnet tool install --global PowerShell'
 
@@ -143,12 +145,14 @@ ForEach-Object -Parallel <scriptblock>
 #   - Sharing the same api/server resources/services limits
 #   - Sharing the same network bandwidth
 # -Local execution sharing the same resource (CPU, Storage, ...)
-# -Tasks waiting for other things
 #
-# Example of good usage
-# -Short execution for each thread, no wait
-# -Multicore machines
-# -Gathering data from different services
+# Great for
+# -Gather data from multiple services or end-points
+# -Parse process logs
+#
+#
+# Worth noting.. Invoke-Command already have its own parallelism systems
+# so not always a good things to combine the two
 
 # Not always faster
 measure-Command { 1..100 | Foreach-Object -Process {$_} }
@@ -159,6 +163,10 @@ Measure-Command { 1..100 | Foreach-Object -Parallel {$_} -ThrottleLimit 20 } # I
 Measure-Command { 1..10 | Foreach-Object -Process {Start-Sleep -Seconds 1} }
 Measure-Command { 1..10 | Foreach-Object -Parallel {Start-Sleep -Seconds 1} } # Default trottle is
 Measure-Command { 1..10 | Foreach-Object -Parallel {Start-Sleep -Seconds 1} -ThrottleLimit 10 } # Increase trottle
+
+
+# Worth testing against different data-set,
+# nothing magic here that works in every cases
 
 # Passing data to the runspaces
 $Message = "Output:"
@@ -267,6 +275,7 @@ $x = 1
 $x ?? 'x is null'
 
 # example D - if posh-git is not present, install it
+Get-Module -ListAvailable -Name posh-git
 (Get-Module -ListAvailable posh-git) ?? (Install-Module posh-git -WhatIf -Force)
 
 # example C - if file 'stuff.txt' exists show content, else get some content and create file
@@ -368,22 +377,49 @@ $end    = 25
 
 
 
+####################
+# WINDOWS ONLY UPDATE
+####################
+
+# On Windows
+Import-Module ActiveDirectory -UseWindowsPowerShell
+
+#-GUI tools are back: Out-GridView, Get-Help -ShowWindow, Show-Command
+#-Get-HotFix (is back, added to .Net Core)
+
+
+####################
+# NEW VERSION NOTIFICATION
+####################
+
+# New Version notification
+# https://docs.microsoft.com/en-us/powershell/scripting/whats-new/what-s-new-in-powershell-70?view=powershell-7#new-version-notification
+# once a day PowerShell query online services to determine if a newer version is available
+$Env:POWERSHELL_UPDATECHECK
+# This need to be set
+
+
+
 
 ####################
 # OTHER NEW FEATURES
 ####################
 
 # PowerShell Jobs
+
 ## Foreach-Object parallel can use jobs
 1..100 | Foreach-Object -Parallel {"Stuff $_"} -AsJob |Receive-Job -Wait
+
 ## Start-job has a WorkDirectory parameter
 Start-job -ScriptBlock {"Hey"} -WorkingDirectory (Resolve-Path ~)|Receive-Job -Wait
+
 ## Start-job has a PSVersion parameter (only works on Windows)
 Start-job -ScriptBlock {"Hey"} -PSVersion 5.1 |Receive-Job -Wait
 ## Start-job - RunAs32 parameter does not work on 64bits systems
 ##  to start a 32-bit PowerShell (pwsh) process with RunAs32, you need to have the 32-bit PowerShell installed.
 
-# Invoke-WebRequest
+# Invoke-WebRequest and Invoke-RestMethod new params
+
 ## New Parameter "-SkipHttpErrorCheck"
 ##  ignore HTTP error statuses and continue to process responses
 Invoke-WebRequest -uri 'http://lazywinadmin.com' -SkipHttpErrorCheck
@@ -393,13 +429,21 @@ Invoke-RestMethod -uri 'http://lazywinadmin.com' -SkipHttpErrorCheck
 Invoke-RestMethod -uri 'http://lazywinadmin.com' -SkipHttpErrorCheck -StatusCodeVariable mystatuscode
 $mystatuscode # Contains the status code
 
+# -Group-Object -CaseSensitive fixed
+$capitonyms = @(
+    [PSCustomObject]@{
+        Capitonym = 'Bill'
+    }
+    [PSCustomObject]@{
+        Capitonym = 'bill'
+    }
+)
+$capitonyms | Group-Object -Property Capitonym -AsHashTable -CaseSensitive
 
-
-#using these new functionality
-#requires -version 7
 
 
 # Update to Test-Connection
+
 # See the traceroute neatly
 # Latency
 Test-Connection www.microsoft.com
@@ -412,10 +456,31 @@ Test-Connection www.microsoft.com -TcpPort 80
 Test-Connection www.microsoft.com -MtuSize
 (Test-Connection www.microsoft.com).reply #reply from the framework directly
 
+
+####################
+# Desired State Configuration (DSC) (Experimental)
+####################
+## Ability to invoke DSC resources directly from PowerShell 7 (experimental)
+Get-ExperimentalFeature -Name PSDesiredStateConfiguration.InvokeDscResource
+Enable-ExperimentalFeature -Name PSDesiredStateConfiguration.InvokeDscResource
+
+
+
+####################
+# More
+####################
+
+# Clipboard Cmdlets are back
+# Does not seem to work properly on Linux
+
+# Other information
+# -Telemetry will monitor more Microsoft Modules
+#   https://github.com/PowerShell/PowerShell/pull/10751
+
+# Update to Format-Hex
 # Was present in ps 3 or 4
 Format-Hex
 "som string" | Format-Hex
-
 
 0xFF
 # Binary
@@ -433,54 +498,9 @@ Format-Hex
 
 10s
 
-# On WIndows
-Import-Module ActiveDirectory -UseWindowsPowerShell
-# Windows only features
-#-GUI tools are back: Out-GridView, Get-Help -ShowWindow, Show-Command
-#-Import-Module -UseWindowsPowerShell
-#-Get-HotFix (is back, added to .Net Core)
-###
-
 
 [System.Collections.Concurrent.*]
 
-
-
-
-# New Version notification
-# https://docs.microsoft.com/en-us/powershell/scripting/whats-new/what-s-new-in-powershell-70?view=powershell-7#new-version-notification
-# once a day PowerShell query online services to determine if a newer version is available
-$Env:POWERSHELL_UPDATECHECK
-# This need to be set
-
-
-
-# Clipboard Cmdlets are back
-# Does not seem to work properly on Linux
-
-
-# Other information
-# -Telemetry will monitor more Microsoft Modules
-#   https://github.com/PowerShell/PowerShell/pull/10751
-
-# -Group-Object -CaseSensitive fixed
-$capitonyms = @(
-    [PSCustomObject]@{
-        Capitonym = 'Bill'
-    }
-    [PSCustomObject]@{
-        Capitonym = 'bill'
-    }
-)
-$capitonyms | Group-Object -Property Capitonym -AsHashTable -CaseSensitive
-
-
-####################
-# Desired State Configuration (DSC) (Experimental)
-####################
-## Ability to invoke DSC resources directly from PowerShell 7 (experimental)
-Get-ExperimentalFeature -Name PSDesiredStateConfiguration.InvokeDscResource
-Enable-ExperimentalFeature -Name PSDesiredStateConfiguration.InvokeDscResource
 
 
 <# Resources
