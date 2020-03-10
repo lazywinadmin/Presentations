@@ -10,11 +10,20 @@
 - Phone on Silent
 
 #>
+
+# Checks Audience
+#-Audio
+#-Partage d'ecran
+#-Theme
+#-Font Size
+
+
 #############################
 # PowerShell 7 - What's new #
 #############################
 
 <# ABOUT ME
+- Francois-Xavier Cat
 - Based in San Francisco Bay, California
 - Cloud DevOps Engineer
 - @lazywinadmin
@@ -23,16 +32,23 @@
 - Microsoft MVP (since 2014)
 #>
 
-<# FRPSUG
--Chat:  frpsug.com/slack
--Watch: frpsug.com/videos
+
+
+<# French PowerShell User Group
+
 -Speak: frpsug.com/speak
     or contact:
         -Laurent    (@IronTux)
         -Olivier    (@omiossec_med)
         -Stephane   (@stephanevg)
         -FX         (@lazywinadmin)
+-Chat:  frpsug.com/slack
+-Watch: frpsug.com/videos
 #>
+
+
+
+
 
 
 <# CONTENT
@@ -40,14 +56,16 @@
 - github.com/frpsug/presentations
 #>
 
+
+
 <# DEMO CONTEXT
 - Ubuntu 18.04
 - PowerShell 7.0.0
-- VSCode + PS Extension 2020.3.0
+- Visual Studio Code
+    Powershell Extension 2020.3.0
 #>
 
 <# AGENDA
--A propos de PowerShell 7
 -Installation
 -Foreach-Object -Parallel
 -New Error functionalities
@@ -59,10 +77,13 @@
 
 <# About PowerShell 7
 - First Long Term Servicing (LTS) release
-    Three years of Support and release every other year
-    (Current releases are supported for three months after a subsequent Current or LTS release.)
+    - Release every other year
+    - Support for 3 years
+
+    - Current releases are supported for three months after a subsequent Current or LTS release.
 
 - PowerShell 7 is based on .NET Core 3.1
+
 - OS Supported:
   - Windows 8.1, and 10
   - Windows Server 2012, 2012 R2, 2016, and 2019
@@ -98,6 +119,9 @@ Main methods available, see docs for more details
 
 #>
 
+
+
+
 ####################
 <# FOREACH-OBJECT -Parallel
 ####################
@@ -105,8 +129,10 @@ Main methods available, see docs for more details
 -Built-in parallelism
 -Use Current directory
 
-
-https://devblogs.microsoft.com/powershell/powershell-foreach-object-parallel-feature/
+# What is this ?
+#- Start some extra runspaces
+#- Similar to what some other modules/scripts can already do (ThreadJob, PoshRSJob, Invoke-Parallel)
+#- Can be managed by PowerShell Jobs
 
 ForEach-Object -Parallel <scriptblock>
     [-InputObject <psobject>]
@@ -116,17 +142,13 @@ ForEach-Object -Parallel <scriptblock>
     [-WhatIf] [-Confirm] [<CommonParameters>]
 #>
 
-# What is this ?
-#- Start some extra runspaces
-#- Similar to what some other modules/scripts can already do (ThreadJob, PoshRSJob, Invoke-Parallel)
-#- Can be managed by PowerShell Jobs
-
 # Usage
+1..5 | Foreach-Object {$_}
 1..5 | Foreach-Object -Parallel {$_}
 
 # Throttle
 # Get-Runspace
-1..15 | Foreach-Object -Parallel { $((Get-Runspace).count)} -ThrottleLimit 10 # default is 5
+1..100 | Foreach-Object -Parallel { $((Get-Runspace).count) } -ThrottleLimit 20 # default is 5
 
 
 # Show Runspace/Thread ID
@@ -164,7 +186,6 @@ Measure-Command { 1..10 | Foreach-Object -Process {Start-Sleep -Seconds 1} }
 Measure-Command { 1..10 | Foreach-Object -Parallel {Start-Sleep -Seconds 1} } # Default trottle is
 Measure-Command { 1..10 | Foreach-Object -Parallel {Start-Sleep -Seconds 1} -ThrottleLimit 10 } # Increase trottle
 
-
 # Worth testing against different data-set,
 # nothing magic here that works in every cases
 
@@ -186,6 +207,7 @@ Receive-Job -Wait
 
 # Storing Data
 # Using thread safe variable references
+# https://docs.microsoft.com/en-us/dotnet/standard/collections/thread-safe/
 $threadSafeDictionary = [System.Collections.Concurrent.ConcurrentDictionary[string,object]]::new()
 Get-Process | ForEach-Object -Parallel {
     $dict = $using:threadSafeDictionary
@@ -243,6 +265,8 @@ Get-Error
 $Error[0] | Get-Error
 Get-Error -Newest 2
 
+
+
 ####################
 <# NULL-COALESCING Operators
 ####################
@@ -275,11 +299,10 @@ $x = 1
 $x ?? 'x is null'
 
 # example D - if posh-git is not present, install it
-Get-Module -ListAvailable -Name posh-git
 (Get-Module -ListAvailable posh-git) ?? (Install-Module posh-git -WhatIf -Force)
 
 # example C - if file 'stuff.txt' exists show content, else get some content and create file
-(Get-Content ./stuff.txt -ea 0|select -f 2) ?? ((iwr 'http://lazywinadmin.com').content > ./stuff.txt)
+(Get-Content ./stuff.txt -ea 0) ?? ((iwr 'http://lazywinadmin.com').content > ./stuff.txt)
 
 
 #######
@@ -288,6 +311,7 @@ Get-Module -ListAvailable -Name posh-git
 # If left statement is null, assign value specified on the right
 
 ## BEFORE
+$x = $null
 if ($null -eq $x) {$x=5}
 
 ## NEW in PS 7
@@ -331,11 +355,12 @@ sudo apt update && sudo apt upgrade
 
 
 
+
 ######
 # || #
 ######
 
-# <Command 1> && <Command 2 if Command 1 was failed>
+# <Command 1> || <Command 2 if Command 1 was failed>
 
 ## BEFORE
 Get-Process -id abc ; if (-not$?) { Write-Output 'Second command' }
@@ -375,30 +400,34 @@ $end    = 25
 
 (($end - $start) -gt 5) ? "More than 5" : "Less than 5"
 
-
-
-####################
-# WINDOWS ONLY UPDATE
-####################
-
-# On Windows
-Import-Module ActiveDirectory -UseWindowsPowerShell
-
-#-GUI tools are back: Out-GridView, Get-Help -ShowWindow, Show-Command
-#-Get-HotFix (is back, added to .Net Core)
+(gmo -list adsips) ? (ipmo adsips) : (install-module adsips -WhatIf)
+(get-service myservice) ? (irm http://myservice?getstuff) : (installmyservice.ps1;irm http://myservice?getstuff)
 
 
 ####################
 # NEW VERSION NOTIFICATION
 ####################
-
 # New Version notification
 # https://docs.microsoft.com/en-us/powershell/scripting/whats-new/what-s-new-in-powershell-70?view=powershell-7#new-version-notification
 # once a day PowerShell query online services to determine if a newer version is available
 $Env:POWERSHELL_UPDATECHECK
 # This need to be set
 
+# see pwsh-preview
 
+####################
+# WINDOWS ONLY
+####################
+# On Windows
+Import-Module ActiveDirectory -UseWindowsPowerShell
+
+# Import-Module -PSSession
+
+#-GUI tools are back:
+#  Out-GridView
+#  Get-Help -ShowWindow
+#  Show-Command (a valider)
+#-Get-HotFix (is back, added to .Net Core)
 
 
 ####################
@@ -418,6 +447,7 @@ Start-job -ScriptBlock {"Hey"} -PSVersion 5.1 |Receive-Job -Wait
 ## Start-job - RunAs32 parameter does not work on 64bits systems
 ##  to start a 32-bit PowerShell (pwsh) process with RunAs32, you need to have the 32-bit PowerShell installed.
 
+
 # Invoke-WebRequest and Invoke-RestMethod new params
 
 ## New Parameter "-SkipHttpErrorCheck"
@@ -428,6 +458,57 @@ Invoke-RestMethod -uri 'http://lazywinadmin.com' -SkipHttpErrorCheck
 ## New Parameter for Invoke-RestMethod
 Invoke-RestMethod -uri 'http://lazywinadmin.com' -SkipHttpErrorCheck -StatusCodeVariable mystatuscode
 $mystatuscode # Contains the status code
+
+
+# JSON Cmdlets
+
+# New Parameter -AsHashTable
+# credit to https://powershell.anovelidea.org/powershell/ps7now-changes-to-json-cmdlets/
+$validJson = @'
+{
+  "array": [
+    1,
+    2,
+    3
+  ],
+  "boolean": true,
+  "null": null,
+  "number": 123,
+  "object": {
+    "a": "b",
+    "c": "d"
+  },
+  "string": "Hello World",
+  "String": "Party On!",
+  "" : "Empty Property Name1"
+}
+'@
+
+$validJson | ConvertFrom-Json -AsHashtable
+
+# New Parameter -NoEnumerate
+# See: https://github.com/PowerShell/PowerShell/issues/3424
+
+'[1,2,3]' | ConvertFrom-Json |measure
+'[1,2,3]' | ConvertFrom-Json -NoEnumerate |measure
+
+# ConvertTo-Json -EnumsAsString
+enum CarTypes {
+    Compact
+    MidSize
+    Intermediate
+    SUV
+    Luxury
+}
+[CarTypes]::SUV,[CarTypes]::Compact | ConvertTo-Json
+[CarTypes]::SUV,[CarTypes]::Compact | ConvertTo-Json -EnumsAsStrings
+
+# ConvertTo-Json -AsArray
+"one" | ConvertTo-Json
+"one" | ConvertTo-Json -AsArray
+
+# Test-Json
+
 
 # -Group-Object -CaseSensitive fixed
 $capitonyms = @(
@@ -456,15 +537,12 @@ Test-Connection www.microsoft.com -TcpPort 80
 Test-Connection www.microsoft.com -MtuSize
 (Test-Connection www.microsoft.com).reply #reply from the framework directly
 
-
 ####################
 # Desired State Configuration (DSC) (Experimental)
 ####################
 ## Ability to invoke DSC resources directly from PowerShell 7 (experimental)
 Get-ExperimentalFeature -Name PSDesiredStateConfiguration.InvokeDscResource
 Enable-ExperimentalFeature -Name PSDesiredStateConfiguration.InvokeDscResource
-
-
 
 ####################
 # More
@@ -485,21 +563,16 @@ Format-Hex
 0xFF
 # Binary
 0b010101010
-
 0b011111 -shl 1
 0b011111
 0b01111
-
 10u
-10u.gettype()
-
+10u.gettype().FullName
 10y
-10y.gettype()
+10y.gettype().FullName
+10s.GetType().FullName
 
-10s
 
-
-[System.Collections.Concurrent.*]
 
 
 
@@ -508,4 +581,6 @@ Format-Hex
 - Microsoft doc, PowerShell 7 What's new: https://docs.microsoft.com/en-us/powershell/scripting/whats-new/what-s-new-in-powershell-70?view=powershell-7
 - ChangeLog: https://github.com/PowerShell/PowerShell/blob/master/CHANGELOG/7.0.md
 - Breaking changes and Improvements: https://docs.microsoft.com/en-us/powershell/scripting/whats-new/what-s-new-in-powershell-70?view=powershell-7#breaking-changes-and-improvements
+- Foreach-Object -Parallel https://devblogs.microsoft.com/powershell/powershell-foreach-object-parallel-feature/
+- SecretsManagement module https://devblogs.microsoft.com/powershell/secrets-management-module-vault-extensions/
 #>
