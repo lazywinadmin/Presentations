@@ -1,23 +1,3 @@
-<# TODO
-- Hide Google bookmarks
-- Hide chrome plugins
-- Hide Desktop icons
-- Re-Launch PowerShell sessions
-- VSCode Theme: Light for presentation
-- Use Mouse with cable ?
-- Silent Slack
-- Close Google Hangout/other chats
-- Phone on Silent
-
-#>
-
-# Checks Audience
-#-Audio
-#-Partage d'ecran
-#-Theme
-#-Font Size
-
-
 #############################
 # PowerShell 7 - What's new #
 #############################
@@ -143,13 +123,12 @@ ForEach-Object -Parallel <scriptblock>
 #>
 
 # Usage
-1..5 | Foreach-Object {$_}
+1..5 | Foreach-Object -Process {$_}
 1..5 | Foreach-Object -Parallel {$_}
 
 # Throttle
 # Get-Runspace
 1..100 | Foreach-Object -Parallel { $((Get-Runspace).count) } -ThrottleLimit 20 # default is 5
-
 
 # Show Runspace/Thread ID
 1..10 | Foreach-Object -Parallel {
@@ -230,7 +209,7 @@ $threadSafeDictionary["pwsh"]   # Specific value
 ####################
 # highlights the string that matches the pattern you searched
 Get-content ./20200310-PowerShell7-whats_new/stuff.txt |
-    Select-String -Pattern 'powershell'
+    Select-String -Pattern 'powershell' -Context 2,2
 
 
 ####################
@@ -264,7 +243,6 @@ $Host.PrivateData.ErrorAccentColor = 'Blue'
 Get-Error
 $Error[0] | Get-Error
 Get-Error -Newest 2
-
 
 
 ####################
@@ -426,7 +404,8 @@ Import-Module ActiveDirectory -UseWindowsPowerShell
 #-GUI tools are back:
 #  Out-GridView
 #  Get-Help -ShowWindow
-#  Show-Command (a valider)
+#  Show-Command
+
 #-Get-HotFix (is back, added to .Net Core)
 
 
@@ -491,6 +470,8 @@ $validJson | ConvertFrom-Json -AsHashtable
 
 '[1,2,3]' | ConvertFrom-Json |measure
 '[1,2,3]' | ConvertFrom-Json -NoEnumerate |measure
+
+
 
 # ConvertTo-Json -EnumsAsString
 enum CarTypes {
